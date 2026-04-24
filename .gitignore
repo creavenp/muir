@@ -4,3 +4,4 @@
 *.tflite
 .DS_Store
 /muir.json
+docs/internal-planning/

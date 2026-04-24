@@ -1,8 +1,8 @@
 # Muir — Design Doc
 
-**Status:** Living document. Edit freely. Co-authored by PDaddy + Claude.
+**Status:** Living document. Edit freely.
 **License:** Apache-2.0
-**Last updated:** 2026-04-21 (iter. 6 — Detector trait locked, post-MVP model footprint goal)
+**Last updated:** 2026-04-23
 
 ---
 
@@ -11,7 +11,7 @@
 Sections are tagged:
 
 - `[DECIDED]` — we've agreed, no more debate unless new info shows up.
-- `[LEAN]` — Claude has a recommendation, PDaddy signs off or overrides.
+- `[LEAN]` — current recommendation, open to revision.
 - `[OPEN]` — real decision to make, with options laid out. This is where your input matters most.
 - `[RESEARCH]` — unknowns that need investigation before we can decide.
 - `[DEFERRED]` — decision belongs to a later phase; record current thinking, revisit then.
@@ -262,7 +262,7 @@ Options considered:
    serde support. No comments without extensions (JSON5/JSONC).
 3. **YAML** — common in ML world, but hand-editing pitfalls (indentation, type coercion).
 
-**[DECIDED] JSON for MVP.** PDaddy's call: researchers are overwhelmingly JSON-literate,
+**[DECIDED] JSON for MVP.** Researchers are overwhelmingly JSON-literate,
 TOML is Rust-native but less universal, and JSON is the unanimous option across target
 users. The no-comments tradeoff is acknowledged — we'll mitigate with a well-documented
 schema file (`docs/config-schema.json`) and clear examples in `README.md`.
@@ -333,7 +333,7 @@ Phase 4, not a modeling problem now.
 **[DECIDED] Time representation.** UTC everywhere internal. Zoned only at presentation
 (logs, UI). `timestamp` and `ingested_at` are both `DateTime<Utc>`.
 
-**Detection generality.** PDaddy asked: is `Detection` bird-specific or generic across
+**Detection generality.** Is `Detection` bird-specific or generic across
 modalities? Is a `String` label enough?
 
 Design answer:
@@ -358,10 +358,9 @@ Phase 5's plugins surface a field the `Detection` can't carry cleanly.
 
 **On `sensor_location` and privacy.** Location stays on `Detection` because the LLM
 summarization layer (Phase 5) genuinely benefits from it — *"chainsaw detected near grid
-C4 at 14:23"* is more useful than *"chainsaw detected"*. But PDaddy correctly flagged
-that exposing precise lat/lon in every outbound event payload is a real attack surface,
-especially for anti-poaching deployments where sensor-location leakage defeats the
-purpose. Resolution (per §4 principle 8): the canonical `Detection` holds full-fidelity
+C4 at 14:23"* is more useful than *"chainsaw detected"*. Exposing precise lat/lon in
+every outbound event payload is a real attack surface, especially for anti-poaching
+deployments where sensor-location leakage defeats the purpose. Resolution (per §4 principle 8): the canonical `Detection` holds full-fidelity
 location; the **sink layer** is responsible for redaction on externally-bound outputs.
 Redaction modes (config-driven, defaults to `CoarsenedGrid`):
 
@@ -408,7 +407,7 @@ Phase 6 — should mean writing one new `impl` and zero changes anywhere else in
 gateway. The trait exists from commit #1 even though we'll only have one implementor
 for months. This is how we honor §4 principle 2 (*plugin-ready before plugins exist*).
 
-**The question PDaddy raised: one trait for all modalities, or per-modality traits?**
+**The question: one trait for all modalities, or per-modality traits?**
 
 §4 principle 1 (modality-agnostic core) is satisfied on the *output* side — every
 detector emits `Detection`s in the same schema regardless of source. The open question
@@ -480,9 +479,8 @@ Either evolution is backwards-compatible with the Phase 1 shape because all
 consumers route through the supertrait or a specific subtrait by name, never by
 unification assumptions.
 
-**Next step.** We co-design the concrete `Detector` and `AudioDetector` signatures
-as the first PR against the repo, not in this doc. I'll propose shapes, PDaddy
-pushes back, we converge, code goes in.
+**Next step.** Concrete `Detector` and `AudioDetector` signatures are co-designed
+as a PR against the repo, not in this doc.
 
 ## 7. Repo structure (Phase 1 target)
 
@@ -522,7 +520,7 @@ muir/
 
 ### Phase 1 — Local BirdNET (weeks 1–3)
 Goal: `cargo run -- --config ./muir.json path/to/bird.wav` produces a structured list of
-species detections on stdout, on the Mac.
+species detections on stdout.
 
 - `cargo init`, Apache-2.0 license, `.gitignore`, initial commit
 - Fetch BirdNET, confirm/execute ONNX conversion path, document in `scripts/fetch_birdnet.sh`
