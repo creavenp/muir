@@ -10,4 +10,5 @@ description = "Edge gateway for heterogeneous conservation sensor data"
 chrono = { version = "0.4", features = ["serde"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+thiserror = "2.0.18"
 uuid = { version = "1", features = ["v4", "serde"] }
