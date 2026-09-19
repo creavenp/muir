@@ -68,9 +68,26 @@ pub enum Severity {
 /// `Eq` and `Hash` are intentionally omitted because `f64` contains `NaN`,
 /// which violates the total-equality contract those traits require.
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[serde(try_from = "LatLonWire")]
 pub struct LatLon {
     lat: f64,
     lon: f64,
+}
+
+/// Wire shim: deserializes raw fields, then routes through
+/// [`LatLon::new`] for range validation.
+#[derive(Deserialize)]
+struct LatLonWire {
+    lat: f64,
+    lon: f64,
+}
+
+impl TryFrom<LatLonWire> for LatLon {
+    type Error = String;
+
+    fn try_from(wire: LatLonWire) -> Result<Self, Self::Error> {
+        LatLon::new(wire.lat, wire.lon)
+    }
 }
 
 impl LatLon {
@@ -424,6 +441,12 @@ mod tests {
         let json = serde_json::to_string(&original).unwrap();
         let back: Detection = serde_json::from_str(&json).unwrap();
         assert_eq!(original, back);
+    }
+
+    #[test]
+    fn latlon_deserialize_rejects_out_of_range_values() {
+        let result: Result<LatLon, _> = serde_json::from_str(r#"{"lat":999.0,"lon":0.0}"#);
+        assert!(result.is_err());
     }
 
     #[test]
