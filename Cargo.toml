@@ -7,6 +7,7 @@ description = "Edge gateway for heterogeneous conservation sensor data"
 
 [dependencies]
 # Core types (PR 2). Each of these earns its keep in src/types.rs.
+anyhow = "1"
 chrono = { version = "0.4", features = ["serde"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
